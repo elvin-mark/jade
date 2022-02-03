@@ -12,9 +12,12 @@ public class MmBackward extends Node {
         Tensor t1 = this.children.get(0).tensor;
         Tensor t2 = this.children.get(1).tensor;
         Tensor t = this.tensor;
-        // FIXME
-        for (int i = 0; i < t.data.length; i++) {
-            t.grad.data[i] = t1.data[i] * t2.data[i] * loss.data[i];
-        }
+        Tensor new_loss_1, new_loss_2;
+
+        new_loss_1 = loss.mm(t2.transpose());
+        new_loss_2 = t1.transpose().mm(loss);
+
+        t1.node.backward(new_loss_1);
+        t2.node.backward(new_loss_2);
     }
 }

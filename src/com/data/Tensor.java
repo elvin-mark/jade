@@ -4,6 +4,7 @@ public class Tensor {
     public int[] shape;
     public float[] data;
     public int size;
+    public int[] stride;
     public Tensor grad = null;
     public Node node = null;
     public boolean requires_grad_ = false;
@@ -11,17 +12,22 @@ public class Tensor {
     // Constructors
     public Tensor(int[] shape) {
         this.shape = shape;
+        this.stride = new int[shape.length];
         this.size = 1;
-        for (int i = 0; i < shape.length; i++) {
+        for (int i = shape.length - 1; i >= 0; i--) {
+            this.stride[i] = this.size;
             this.size *= shape[i];
         }
         this.data = new float[this.size];
+        this.node = new Node(this);
     }
 
     public Tensor(int[] shape, float[] data) {
         this.shape = shape;
+        this.stride = new int[shape.length];
         this.size = 1;
-        for (int i = 0; i < shape.length; i++) {
+        for (int i = shape.length - 1; i >= 0; i--) {
+            this.stride[i] = this.size;
             this.size *= shape[i];
         }
 
@@ -29,24 +35,31 @@ public class Tensor {
             throw new RuntimeException("Tensor data size mismatch");
         }
         this.data = data;
+        this.node = new Node(this);
     }
 
     public Tensor(Tensor tensor) {
         this.shape = tensor.shape;
         this.size = tensor.size;
         this.data = tensor.data;
+        this.stride = tensor.stride;
+        this.node = new Node(this);
     }
 
     public Tensor(float[] data) {
         this.shape = new int[] { data.length };
         this.size = data.length;
         this.data = data;
+        this.stride = new int[] { 1 };
+        this.node = new Node(this);
     }
 
     public Tensor(float value) {
         this.shape = new int[] { 1 };
         this.size = 1;
         this.data = new float[] { value };
+        this.stride = new int[] { 1 };
+        this.node = new Node(this);
     }
 
     // Useful intializers
@@ -100,11 +113,15 @@ public class Tensor {
         }
 
         int i = 0;
-        int j = 1;
+        // int j = 1;
 
-        for (int k = index.length - 1; k >= 0; k--) {
-            i += index[k] * j;
-            j *= shape[k];
+        // for (int k = index.length - 1; k >= 0; k--) {
+        // i += index[k] * j;
+        // j *= shape[k];
+        // }
+
+        for (int k = 0; k < index.length; k++) {
+            i += index[k] * this.stride[k];
         }
         return data[i];
     }
@@ -115,10 +132,13 @@ public class Tensor {
         }
 
         int i = 0;
-        int j = 1;
-        for (int k = index.length - 1; k >= 0; k--) {
-            i += index[k] * j;
-            j *= shape[k];
+        // int j = 1;
+        // for (int k = index.length - 1; k >= 0; k--) {
+        // i += index[k] * j;
+        // j *= shape[k];
+        // }
+        for (int k = 0; k < index.length; k++) {
+            i += index[k] * this.stride[k];
         }
         data[i] = value;
     }
@@ -132,18 +152,37 @@ public class Tensor {
 
     public void view(int[] shape) {
         int new_size = 1;
-        for (int i = 0; i < shape.length; i++) {
+        int[] new_stride = new int[shape.length];
+
+        for (int i = shape.length - 1; i >= 0; i--) {
+            new_stride[i] = new_size;
             new_size *= shape[i];
         }
+
         if (this.size != new_size)
             throw new RuntimeException("Tensor size mismatch");
 
         this.shape = shape;
         this.size = new_size;
+        this.stride = new_stride;
     }
 
     public void reshape(int[] shape) {
         this.view(shape);
+    }
+
+    public Tensor transpose() {
+        // Add TransposeBackward?
+        Tensor result = new Tensor(this);
+        int[] new_stride = new int[this.shape.length];
+        int[] new_shape = new int[this.shape.length];
+        for (int i = 0; i < this.shape.length; i++) {
+            new_stride[i] = this.stride[this.shape.length - i - 1];
+            new_shape[i] = this.shape[this.shape.length - i - 1];
+        }
+        result.stride = new_stride;
+        result.shape = new_shape;
+        return result;
     }
 
     // Gradient related functions
@@ -303,6 +342,41 @@ public class Tensor {
             result.node = new MeanBackward(this, result);
         }
         return result;
+    }
+
+    public Tensor einsum(String equation, Tensor other) {
+        // FIXME
+        // String[] terms = equation.split("\\,");
+        // if (terms.length != 2) {
+        // throw new RuntimeException("Tensor.einsum: only support two terms");
+        // }
+        // String[] term1 = terms[0].split("\\*");
+        // String[] term2 = terms[1].split("\\*");
+        // if (term1.length != term2.length) {
+        // throw new RuntimeException("Tensor.einsum: terms must have the same number of
+        // dimensions");
+        // }
+        // int[] shape = new int[term1.length];
+        // for (int i = 0; i < term1.length; i++) {
+        // if (term1[i].equals(term2[i])) {
+        // shape[i] = this.shape[i];
+        // } else {
+        // shape[i] = this.shape[get_index(term1[i])] * this.shape[get_index(term2[i])];
+        // }
+        // }
+        // Tensor result = new Tensor(shape);
+        // for (int i = 0; i < result.size; i++) {
+        // int[] index = get_index_array(i, result.shape);
+        // int[] index1 = get_index_array(i, this.shape);
+        // int[] index2 = get_index_array(i, other.shape);
+        // result.data[i] = this.at(index1) * other.at(index2);
+        // }
+        // if (this.requires_grad_ || other.requires_grad_) {
+        // result.requires_grad(true);
+        // result.node = new EinsumBackward(this, other, result, equation);
+        // }
+        // return result;
+        return null;
     }
 
     public Tensor sigmoid() {

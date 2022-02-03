@@ -20,7 +20,10 @@ public class Node {
     }
 
     public void backward(Tensor loss) {
-        // implement this
+        if (is_leaf() && this.tensor.requires_grad_) {
+            Tensor new_grad = this.tensor.grad.add(loss);
+            this.tensor.grad.data = new_grad.data;
+        }
     }
 
     public boolean is_leaf() {

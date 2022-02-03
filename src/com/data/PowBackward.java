@@ -11,15 +11,12 @@ public class PowBackward extends Node {
     }
 
     public void backward(Tensor loss) {
-        // TODO
         Tensor t1 = this.children.get(0).tensor;
-        Tensor t1_grad = t1.grad;
-        if (t1_grad == null) {
-            t1_grad = new Tensor(t1);
-            t1.grad = t1_grad;
+        Tensor new_loss = new Tensor(t1.shape);
+
+        for (int i = 0; i < new_loss.size; i++) {
+            new_loss.data[i] = this.exponent * ((float) Math.pow(t1.data[i], this.exponent - 1.0f)) * loss.data[i];
         }
-        for (int i = 0; i < t1_grad.size; i++) {
-            t1_grad.data[i] = this.exponent * this.tensor.data[i] * loss.data[i];
-        }
+        t1.node.backward(new_loss);
     }
 }

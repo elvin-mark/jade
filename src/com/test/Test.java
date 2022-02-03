@@ -49,6 +49,12 @@ public class Test {
         input.reshape(new int[] { 2, 2 });
         target.reshape(new int[] { 2, 1 });
 
+        Tensor tmp = input.transpose();
+        System.out.println(tmp.at(new int[] { 0, 1 }));
+
+        System.out.println(input.transpose().mm(input));
+        System.out.println(input.mm(input));
+
         Tensor output = seq.forward(input);
 
         System.out.println(output);
@@ -62,9 +68,43 @@ public class Test {
         Tensor loss = loss_fn.criterion(output, target);
         loss.backward();
         System.out.println(loss);
+
+        for (Tensor param : seq.parameters()) {
+            System.out.println("param: " + param);
+            System.out.println("grad: " + param.grad);
+        }
+    }
+
+    public static void testBackward() {
+        Tensor t1 = new Tensor(1.2f);
+        Tensor t2 = new Tensor(2.3f);
+        Tensor t3 = new Tensor(3.4f);
+        Tensor t4 = new Tensor(4.5f);
+        Tensor A = new Tensor(new int[] { 2, 2 });
+        A.random(0.0f, 1.0f);
+        A.requires_grad(true);
+        Tensor tmp = A.mean();
+        tmp.backward();
+        System.out.println(A);
+        System.out.println(tmp);
+        System.out.println(A.grad);
+
+        t1.requires_grad(true);
+        t2.requires_grad(true);
+        t3.requires_grad(true);
+        t4.requires_grad(true);
+
+        Tensor t5 = t4.div(t1.mul(t2).add(t3));
+        t5.backward();
+        System.out.println(t5);
+        System.out.println(t1.grad);
+        System.out.println(t2.grad);
+        System.out.println(t3.grad);
+        System.out.println(t4.grad);
     }
 
     public static void main(String args[]) {
         testModule();
+        // testBackward();
     }
 }
