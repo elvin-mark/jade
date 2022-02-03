@@ -9,7 +9,8 @@ public class Linear extends NNModule {
     public Linear(int in_features, int out_features, boolean bias) {
         super();
         Tensor W = new Tensor(new Tensor(new int[] { in_features, out_features }));
-        W.random(0.0f, 1.0f);
+        // W.random(0.0f, 1.0f);
+        W.randn(0.0f, 1.0f);
         W.requires_grad(true);
         this.params.add(W);
 
@@ -18,7 +19,8 @@ public class Linear extends NNModule {
 
         if (bias) {
             Tensor b = new Tensor(new int[] { out_features });
-            b.random(0.0f, 1.0f);
+            // b.random(0.0f, 1.0f);
+            b.randn(0.0f, 1.0f);
             b.requires_grad(true);
             this.params.add(b);
         }

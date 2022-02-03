@@ -31,7 +31,7 @@ public class Tensor {
             this.size *= shape[i];
         }
 
-        if (this.data.length != this.size) {
+        if (data.length != this.size) {
             throw new RuntimeException("Tensor data size mismatch");
         }
         this.data = data;

@@ -11,7 +11,6 @@ public class MmBackward extends Node {
     public void backward(Tensor loss) {
         Tensor t1 = this.children.get(0).tensor;
         Tensor t2 = this.children.get(1).tensor;
-        Tensor t = this.tensor;
         Tensor new_loss_1, new_loss_2;
 
         new_loss_1 = loss.mm(t2.transpose());

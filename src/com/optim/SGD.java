@@ -4,7 +4,7 @@ import com.data.Tensor;
 import java.util.*;
 
 public class SGD extends Optimizer {
-    public SGD(Tensor[] params, Map<String, Float> hyperParameters) {
+    public SGD(ArrayList<Tensor> params, Map<String, Float> hyperParameters) {
         super(params, hyperParameters);
     }
 
