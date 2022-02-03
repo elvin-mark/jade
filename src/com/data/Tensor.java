@@ -258,6 +258,37 @@ public class Tensor {
         return result;
     }
 
+    public Tensor conv2d(Tensor other, int[] stride, int[] padding) {
+        // TODO: Fix this
+        if (this.shape.length != 4 || other.shape.length != 4) {
+            throw new RuntimeException("Tensor.conv2d: only support convolution on 4D tensor");
+        }
+        if (this.shape[1] != other.shape[1] || this.shape[2] != other.shape[2]) {
+            throw new RuntimeException(
+                    "Tensor.conv2d: convolution requires the number of channels of the first tensor to be equal to the number of channels of the second tensor");
+        }
+        int[] shape = new int[] { this.shape[0], other.shape[0],
+                (this.shape[2] - other.shape[2] + 2 * padding[0]) / stride[0],
+                (this.shape[3] - other.shape[3] + 2 * padding[1]) / stride[1] };
+        Tensor result = new Tensor(shape);
+        return result;
+    }
+
+    public Tensor conv1d(Tensor other, int stride, int padding) {
+        // TODO: Fix This
+        if (this.shape.length != 3 || other.shape.length != 3) {
+            throw new RuntimeException("Tensor.conv1d: only support convolution on 3D tensor");
+        }
+        if (this.shape[1] != other.shape[1]) {
+            throw new RuntimeException(
+                    "Tensor.conv1d: convolution requires the number of channels of the first tensor to be equal to the number of channels of the second tensor");
+        }
+        int[] shape = new int[] { this.shape[0], other.shape[0],
+                (this.shape[2] - other.shape[2] + 2 * padding) / stride };
+        Tensor result = new Tensor(shape);
+        return result;
+    }
+
     public Tensor add(Tensor other) {
         if (this.size % other.size != 0) {
             throw new RuntimeException("Tensor.add: size mismatch");
@@ -326,6 +357,30 @@ public class Tensor {
         if (this.requires_grad_) {
             result.requires_grad(true);
             result.node = new PowBackward(this, exponent, result);
+        }
+        return result;
+    }
+
+    public Tensor log() {
+        Tensor result = new Tensor(this.shape);
+        for (int i = 0; i < this.size; i++) {
+            result.data[i] = (float) Math.log(this.data[i]);
+        }
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new LogBackward(this, result);
+        }
+        return result;
+    }
+
+    public Tensor exp() {
+        Tensor result = new Tensor(this.shape);
+        for (int i = 0; i < this.size; i++) {
+            result.data[i] = (float) Math.exp(this.data[i]);
+        }
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new ExpBackward(this, result);
         }
         return result;
     }
@@ -423,6 +478,33 @@ public class Tensor {
         if (this.requires_grad_) {
             result.requires_grad(true);
             result.node = new LeakyReluBackward(this, result, alpha);
+        }
+        return result;
+    }
+
+    public Tensor softmax() {
+        // TODO: Fix this
+        Tensor result = new Tensor(this.shape);
+        float[] max = new float[this.shape[0]];
+        for (int i = 0; i < this.shape[0]; i++) {
+            max[i] = this.data[i * this.shape[1]];
+            for (int j = 1; j < this.shape[1]; j++) {
+                max[i] = Math.max(max[i], this.data[i * this.shape[1] + j]);
+            }
+        }
+        for (int i = 0; i < this.shape[0]; i++) {
+            float sum = 0;
+            for (int j = 0; j < this.shape[1]; j++) {
+                result.data[i * this.shape[1] + j] = (float) Math.exp(this.data[i * this.shape[1] + j] - max[i]);
+                sum += result.data[i * this.shape[1] + j];
+            }
+            for (int j = 0; j < this.shape[1]; j++) {
+                result.data[i * this.shape[1] + j] /= sum;
+            }
+        }
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new SoftmaxBackward(this, result);
         }
         return result;
     }
