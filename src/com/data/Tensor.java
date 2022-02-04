@@ -294,10 +294,12 @@ public class Tensor {
 
     public Tensor conv2d(Tensor other, int[] stride, int[] padding) {
         // TODO: Fix this
+        // shape of tensor: [N, Cin, H, W]
+        // shape of kernel: [Cout, Cin, H, W]
         if (this.shape.length != 4 || other.shape.length != 4) {
             throw new RuntimeException("Tensor.conv2d: only support convolution on 4D tensor");
         }
-        if (this.shape[1] != other.shape[1] || this.shape[2] != other.shape[2]) {
+        if (this.shape[1] != other.shape[1]) {
             throw new RuntimeException(
                     "Tensor.conv2d: convolution requires the number of channels of the first tensor to be equal to the number of channels of the second tensor");
         }
@@ -310,16 +312,28 @@ public class Tensor {
 
     public Tensor conv1d(Tensor other, int stride, int padding) {
         // TODO: Fix This
+        // shape of tensor: [N, Cin, L]
+        // shape of kernel: [Cout, Cin, K]
+
         if (this.shape.length != 3 || other.shape.length != 3) {
             throw new RuntimeException("Tensor.conv1d: only support convolution on 3D tensor");
         }
-        if (this.shape[1] != other.shape[1]) {
+        int num_batch = this.shape[0];
+        int num_channels = this.shape[1];
+        int L = this.shape[2];
+        int C = other.shape[0];
+        int K = other.shape[2];
+
+        if (num_channels != other.shape[1]) {
             throw new RuntimeException(
                     "Tensor.conv1d: convolution requires the number of channels of the first tensor to be equal to the number of channels of the second tensor");
         }
-        int[] shape = new int[] { this.shape[0], other.shape[0],
-                (this.shape[2] - other.shape[2] + 2 * padding) / stride };
+        int[] shape = new int[] { num_batch, C, (L - K + 2 * padding) / stride };
+
         Tensor result = new Tensor(shape);
+        for (int i = 0; i < num_batch; i++) {
+
+        }
         return result;
     }
 
@@ -429,6 +443,20 @@ public class Tensor {
         if (this.requires_grad_) {
             result.requires_grad(true);
             result.node = new MeanBackward(this, result);
+        }
+        return result;
+    }
+
+    public Tensor norm() {
+        Tensor result = new Tensor(new int[] { 1 });
+        for (int i = 0; i < this.size; i++) {
+            result.data[0] += this.data[i] * this.data[i];
+        }
+        result.data[0] = (float) Math.sqrt(result.data[0]);
+
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new NormBackward(this, result);
         }
         return result;
     }

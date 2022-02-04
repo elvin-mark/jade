@@ -5,6 +5,15 @@ import com.functions.F;
 import com.nn.*;
 
 public class Test {
+    public static void testDraft() {
+        Tensor t = new Tensor(new int[] { 2, 2 }, new float[] { 1.0f, 2.0f, 3.0f, 4.0f });
+        t.requires_grad(true);
+        Tensor l = t.norm();
+        System.out.println(l);
+        l.backward();
+        System.out.println(t.grad);
+    }
+
     public static void testTensors() {
         int[] shape1 = { 2, 2 };
         int[] shape2 = { 2, 2 };
@@ -133,6 +142,7 @@ public class Test {
     public static void main(String args[]) {
         // testModule();
         // testBackward();
-        testLoss();
+        // testLoss();
+        testDraft();
     }
 }
