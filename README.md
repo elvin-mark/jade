@@ -1,3 +1,4 @@
+![jade_logo](https://raw.githubusercontent.com/elvin-mark/jade/main/images/jade_logo.png)
 # <span style="color:#00aa22">**Ja**</span>va <span style="color:#00aa22">**De**</span>ep Learning Library
 Deep Learning Library for Java inspired on PyTorch. (It is still not optimized). I really love PyTorch and I was fascinated at how it works, so I decided to implement in Java for fun (and to remember a little bit of Java)
 
