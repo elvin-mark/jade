@@ -1,5 +1,7 @@
 package com.data;
 
+import java.util.ArrayList;
+
 public class Tensor {
     public int[] shape;
     public float[] data;
@@ -8,6 +10,7 @@ public class Tensor {
     public Tensor grad = null;
     public Node node = null;
     public boolean requires_grad_ = false;
+    int offset = 0;
 
     // Constructors
     public Tensor(int[] shape) {
@@ -43,6 +46,7 @@ public class Tensor {
         this.size = tensor.size;
         this.data = tensor.data;
         this.stride = tensor.stride;
+        this.offset = tensor.offset;
         this.node = new Node(this);
     }
 
@@ -60,6 +64,10 @@ public class Tensor {
         this.data = new float[] { value };
         this.stride = new int[] { 1 };
         this.node = new Node(this);
+    }
+
+    public Tensor clone() {
+        return new Tensor(this);
     }
 
     // Useful intializers
@@ -113,17 +121,11 @@ public class Tensor {
         }
 
         int i = 0;
-        // int j = 1;
-
-        // for (int k = index.length - 1; k >= 0; k--) {
-        // i += index[k] * j;
-        // j *= shape[k];
-        // }
 
         for (int k = 0; k < index.length; k++) {
             i += index[k] * this.stride[k];
         }
-        return data[i];
+        return data[i + this.offset];
     }
 
     public void set(int[] index, float value) {
@@ -132,15 +134,11 @@ public class Tensor {
         }
 
         int i = 0;
-        // int j = 1;
-        // for (int k = index.length - 1; k >= 0; k--) {
-        // i += index[k] * j;
-        // j *= shape[k];
-        // }
+
         for (int k = 0; k < index.length; k++) {
             i += index[k] * this.stride[k];
         }
-        data[i] = value;
+        data[i + this.offset] = value;
     }
 
     public float item() {
@@ -182,6 +180,42 @@ public class Tensor {
         }
         result.stride = new_stride;
         result.shape = new_shape;
+        return result;
+    }
+
+    public int[] shape() {
+        return this.shape;
+    }
+
+    public int[] stride() {
+        return this.stride;
+    }
+
+    public Tensor sub_tensor(int[] index) {
+        if (index.length != this.shape.length) {
+            throw new RuntimeException("Tensor index size mismatch");
+        }
+        ArrayList<Integer> new_shape = new ArrayList<Integer>();
+        ArrayList<Integer> new_stride = new ArrayList<Integer>();
+        int new_size = 1;
+        Tensor result = new Tensor(this);
+        int i = 0;
+        for (int k = 0; k < index.length; k++) {
+            if (index[k] < 0) {
+                new_size *= this.shape[k];
+                new_shape.add(this.shape[k]);
+                new_stride.add(this.stride[k]);
+            } else
+                i += index[k] * this.stride[k];
+        }
+        result.offset = i;
+        result.size = new_size;
+        result.shape = new int[new_shape.size()];
+        for (Integer elem : new_shape)
+            result.shape[i] = new_shape.get(elem);
+        result.stride = new int[new_stride.size()];
+        for (Integer elem : new_stride)
+            result.stride[i] = new_stride.get(elem);
         return result;
     }
 
@@ -483,24 +517,27 @@ public class Tensor {
     }
 
     public Tensor softmax() {
-        // TODO: Fix this
+        // input: [N, C , ...]
+        // output: [N, C , ...]
+
         Tensor result = new Tensor(this.shape);
-        float[] max = new float[this.shape[0]];
+        int num_batch = this.shape[0];
+        int num_classes = this.shape[1];
+
+        // Loop over batches
         for (int i = 0; i < this.shape[0]; i++) {
-            max[i] = this.data[i * this.shape[1]];
-            for (int j = 1; j < this.shape[1]; j++) {
-                max[i] = Math.max(max[i], this.data[i * this.shape[1] + j]);
+            for (int j = 0; j < this.size / (num_batch * num_classes); j++) {
+                float sum = 0;
+                for (int k = 0; k < num_classes; k++) {
+                    result.data[i * this.stride[0] + k * this.stride[1] + j] = (float) Math
+                            .exp(this.data[i * this.stride[0] + k * this.stride[1] + j]);
+                    sum += result.data[i * this.stride[0] + k * this.stride[1] + j];
+                }
+                for (int k = 0; k < num_classes; k++) {
+                    result.data[i * this.stride[0] + k * this.stride[1] + j] /= sum;
+                }
             }
-        }
-        for (int i = 0; i < this.shape[0]; i++) {
-            float sum = 0;
-            for (int j = 0; j < this.shape[1]; j++) {
-                result.data[i * this.shape[1] + j] = (float) Math.exp(this.data[i * this.shape[1] + j] - max[i]);
-                sum += result.data[i * this.shape[1] + j];
-            }
-            for (int j = 0; j < this.shape[1]; j++) {
-                result.data[i * this.shape[1] + j] /= sum;
-            }
+
         }
         if (this.requires_grad_) {
             result.requires_grad(true);
@@ -508,4 +545,57 @@ public class Tensor {
         }
         return result;
     }
+
+    public Tensor logsoftmax() {
+        Tensor result = new Tensor(this.shape);
+        int num_batch = this.shape[0];
+        int num_classes = this.shape[1];
+
+        // Loop over batches
+        for (int i = 0; i < this.shape[0]; i++) {
+            for (int j = 0; j < this.size / (num_batch * num_classes); j++) {
+                float sum = 0;
+                for (int k = 0; k < num_classes; k++) {
+                    result.data[i * this.stride[0] + k * this.stride[1] + j] = (float) Math
+                            .exp(this.data[i * this.stride[0] + k * this.stride[1] + j]);
+                    sum += result.data[i * this.stride[0] + k * this.stride[1] + j];
+                }
+                for (int k = 0; k < num_classes; k++) {
+                    result.data[i * this.stride[0] + k * this.stride[1] + j] = (float) Math
+                            .log(result.data[i * this.stride[0] + k * this.stride[1] + j] / sum);
+                }
+            }
+        }
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new LogSoftmaxBackward(this, result);
+        }
+        return result;
+    }
+
+    public Tensor nll(Tensor target) {
+        int[] targetShape = target.shape();
+
+        if (shape.length < 2 || shape.length != targetShape.length || shape[0] != targetShape[0]) {
+            throw new IllegalArgumentException("input and target must have the same shape");
+        }
+
+        int batchSize = shape[0];
+        int[] targetStride = target.stride();
+
+        float kl_divergence = 0;
+        for (int i = 0; i < batchSize; i++) {
+            for (int j = 0; j < target.size / batchSize; j++)
+                kl_divergence += -this.data[i * stride[0] + ((int) target.data[i * targetStride[0] + j]) * stride[1]
+                        + j];
+        }
+
+        Tensor output = new Tensor(kl_divergence / target.size);
+        if (this.requires_grad_) {
+            output.requires_grad(true);
+            output.node = new NLLLossBackward(this, target, output);
+        }
+        return output;
+    }
+
 }

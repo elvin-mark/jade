@@ -9,6 +9,6 @@ public class NLLLoss extends Loss {
     }
 
     public Tensor criterion(Tensor input, Tensor target) {
-        return F.nllloss(input, target);
+        return F.nll_loss(input, target);
     }
 }

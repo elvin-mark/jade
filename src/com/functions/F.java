@@ -47,19 +47,29 @@ public class F {
         return input.softmax();
     }
 
+    public static Tensor logsoftmax(Tensor input) {
+        return input.logsoftmax();
+    }
+
     public static Tensor mse_loss(Tensor input, Tensor target) {
         return input.sub(target).pow(2).mean();
     }
 
-    public static Tensor cross_entropy_loss(Tensor input, Tensor target) {
-        // TODO: Fix this
-        // return -target.mul(input.log()).mean();
-        return null;
+    public static Tensor nll_loss(Tensor input, Tensor target) {
+        /*
+         * input: [N, C, ... ]
+         * target: [N, 1, ... ]
+         */
+
+        return input.nll(target);
     }
 
-    public static Tensor nllloss(Tensor input, Tensor target) {
-        // TODO: Fix this
-        // return -target.mul(input.log()).mean();
-        return null;
+    public static Tensor cross_entropy_loss(Tensor input, Tensor target) {
+        /*
+         * input: [N, C, ... ]
+         * target: [N, 1, ... ]
+         */
+        return nll_loss(input.logsoftmax(), target);
     }
+
 }

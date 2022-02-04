@@ -10,6 +10,10 @@ sample_xor:
 	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java src/com/test/SampleXOR.java
 	java -classpath build/ com.test.SampleXOR
 
+sample_classification:
+	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java src/com/test/SampleClassification.java
+	java -classpath build/ com.test.SampleClassification
+
 jade.jar:
 	mkdir -p build
 	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java 

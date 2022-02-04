@@ -1,7 +1,7 @@
 package com.data;
 
-public class SoftmaxBackward extends Node {
-    public SoftmaxBackward(Tensor t1, Tensor result) {
+public class LogSoftmaxBackward extends Node {
+    public LogSoftmaxBackward(Tensor t1, Tensor result) {
         super();
         this.add_child(t1.node);
         this.tensor = result;
@@ -24,12 +24,12 @@ public class SoftmaxBackward extends Node {
                 float sum = 0;
                 for (int k = 0; k < num_classes; k++) {
                     bp_loss.data[i * t.stride[0] + k * t.stride[1] + j] = loss.data[i * t.stride[0]
-                            + k * t.stride[1] + j] * this.tensor.data[i * t.stride[0] + k * t.stride[1] + j];
+                            + k * t.stride[1] + j];
                     sum += bp_loss.data[i * t.stride[0] + k * t.stride[1] + j];
                 }
                 for (int k = 0; k < num_classes; k++) {
                     bp_loss.data[i * t.stride[0] + k * t.stride[1]
-                            + j] -= this.tensor.data[i * t.stride[0] + k * t.stride[1] + j] * sum;
+                            + j] -= ((float) Math.exp(this.tensor.data[i * t.stride[0] + k * t.stride[1] + j])) * sum;
                 }
             }
         }
