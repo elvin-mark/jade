@@ -6,6 +6,10 @@ import com.functions.F;
 public class MaxPool2d extends NNModule {
     int[] kernel;
 
+    public MaxPool2d(int kernel_size) {
+        this(new int[] { kernel_size, kernel_size });
+    }
+
     public MaxPool2d(int[] kernel) {
         super();
         this.kernel = kernel;
