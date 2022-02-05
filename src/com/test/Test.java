@@ -3,49 +3,14 @@ package com.test;
 import com.data.Tensor;
 import com.functions.F;
 import com.nn.*;
+import com.utils.Misc;
 
 public class Test {
     public static void testDraft() {
-        // Sequential model = new Sequential();
-        // model.add_module((NNModule) new Conv2d(1, 4, 2, true));
-        // model.add_module((NNModule) new ReLU());
-        // model.add_module((NNModule) new Conv2d(4, 8, 2, true));
-        // model.add_module((NNModule) new ReLU());
-        // model.add_module((NNModule) new Conv2d(8, 16, 2, true));
-        // Tensor x = new Tensor(new int[] { 2, 1, 10, 10 });
-        // x.randn(0.0f, 1.0f);
-        // Tensor out = model.forward(x);
-        // for (int i : out.shape) {
-        // System.out.print(i + " ");
-        // }
-        // System.out.println();
-        Tensor t = new Tensor(new int[] { 2, 2, 5, 5 }, new float[] { 0.4962566f, 0.7682218f, 0.08847743f, 0.13203049f,
-                0.30742282f, 0.6340787f, 0.4900934f, 0.89644474f, 0.45562798f, 0.6323063f, 0.34889346f, 0.4017173f,
-                0.022325754f, 0.16885895f, 0.29388845f, 0.5185218f, 0.6976676f, 0.8000114f, 0.16102946f, 0.28226858f,
-                0.68160856f, 0.915194f, 0.3970999f, 0.8741559f, 0.41940832f, 0.55290705f, 0.9527381f, 0.03616482f,
-                0.18523103f, 0.37341738f, 0.30510002f, 0.9320004f, 0.17591017f, 0.26983356f, 0.15067977f, 0.031719506f,
-                0.20812976f, 0.929799f, 0.7231092f, 0.7423363f, 0.5262958f, 0.24365824f, 0.58459234f, 0.03315264f,
-                0.13871688f, 0.242235f, 0.81546897f, 0.7931606f, 0.27825248f, 0.4819588f, 0.81978035f, 0.99706656f,
-                0.6984411f, 0.5675464f, 0.83524317f, 0.20559883f, 0.593172f, 0.112347245f, 0.15345693f, 0.24170822f,
-                0.7262365f, 0.7010802f, 0.20382375f, 0.65105355f, 0.774486f, 0.43689132f, 0.5190908f, 0.61585236f,
-                0.8101883f, 0.98009706f, 0.11468822f, 0.31676513f, 0.69650495f, 0.9142747f, 0.93510365f, 0.9411784f,
-                0.5995073f, 0.06520867f, 0.54599625f, 0.18719733f, 0.034022927f, 0.94424623f, 0.8801799f, 0.0012360215f,
-                0.593586f, 0.41577f, 0.41771942f, 0.27112156f, 0.6922781f, 0.20384824f, 0.68329567f, 0.75285405f,
-                0.8579358f, 0.6869556f, 0.005132377f, 0.17565155f, 0.7496575f, 0.6046507f, 0.10995799f, 0.21209025f
-
-        });
-        // t.randn(0.0f, 1.0f);
-        t.ones();
-        t.requires_grad(true);
-        // System.out.println(t);
-        // Tensor o = t.maxpool2d(new int[] { 2, 2 });
-        Tensor o = t.dropout2d(0.5f);
-        System.out.println(o);
-        Tensor l = o.norm();
-        l.backward();
-        System.out.println(l);
-        System.out.println(t.grad);
-        System.out.println();
+        Tensor x_train = Misc.loadTensor("/home/elvin/Downloads/x_train_digits.bin");
+        Tensor y_train = Misc.loadTensor("/home/elvin/Downloads/y_train_digits.bin");
+        System.out.println(x_train.data[0]);
+        System.out.println(y_train.data[5]);
     }
 
     public static void testTensors() {

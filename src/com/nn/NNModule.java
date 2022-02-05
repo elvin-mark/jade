@@ -2,6 +2,7 @@ package com.nn;
 
 import java.util.ArrayList;
 import com.data.Tensor;
+import com.utils.Misc;
 
 public class NNModule {
     ArrayList<Tensor> params;
@@ -38,5 +39,15 @@ public class NNModule {
     public void eval() {
         // IMPROVE THIS: maybe add this to each parameter (Tensor)?
         this.training = false;
+    }
+
+    public void save_parameters(String filename) {
+        // Implement this method
+
+    }
+
+    public void load_parameters(String filename) {
+        // Implement this method
+
     }
 }
