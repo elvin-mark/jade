@@ -8,6 +8,16 @@ public class Conv2d extends NNModule {
     int[] stride;
     int[] padding;
 
+    public Conv2d(int in_channels, int out_channels, int kernel_size, boolean bias) {
+        this(in_channels, out_channels, new int[] { kernel_size, kernel_size }, new int[] { 1, 1 }, new int[] { 0, 0 },
+                bias);
+    }
+
+    public Conv2d(int in_channels, int out_channels, int kernel_size, int stride, int padding, boolean bias) {
+        this(in_channels, out_channels, new int[] { kernel_size, kernel_size }, new int[] { stride, stride },
+                new int[] { padding, padding }, bias);
+    }
+
     public Conv2d(int in_channels, int out_channels, int[] kernel_size, int[] stride, int[] padding, boolean bias) {
         super();
         this.moduleName = "Conv2d";

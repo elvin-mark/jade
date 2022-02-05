@@ -393,6 +393,61 @@ public class Tensor {
         return result;
     }
 
+    public Tensor maxpool2d(int[] kernel) {
+        int[] new_shape = new int[this.shape.length];
+        new_shape[2] = this.shape[2] / kernel[0];
+        new_shape[3] = this.shape[3] / kernel[1];
+        int N = this.shape[0];
+        int Cin = this.shape[1];
+        new_shape[0] = N;
+        new_shape[1] = Cin;
+
+        int H = new_shape[2] * kernel[0];
+        int W = new_shape[3] * kernel[1];
+
+        Tensor result = new Tensor(new_shape);
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < Cin; j++) {
+                for (int k = 0; k < H; k += kernel[0]) {
+                    for (int l = 0; l < W; l += kernel[1]) {
+                        float max = this.at(new int[] { i, j, k, l });
+                        for (int m = 0; m < kernel[0]; m++) {
+                            for (int n = 0; n < kernel[1]; n++) {
+                                max = Math.max(max, this.at(new int[] { i, j, k + m, l + n }));
+                            }
+                        }
+                        result.set(new int[] { i, j, k / kernel[0], l / kernel[1] }, max);
+                    }
+                }
+            }
+        }
+
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new MaxPool2dBackward(this, result, kernel);
+        }
+
+        return result;
+    }
+
+    public Tensor dropout2d(float p) {
+        Tensor result = new Tensor(this.shape);
+        for (int i = 0; i < this.size; i++) {
+            if (Math.random() < p) {
+                result.data[i] = 0;
+            } else {
+                result.data[i] = this.data[i] / p;
+            }
+        }
+
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new Dropout2dBackward(this, result, p);
+        }
+        return result;
+    }
+
     public Tensor add(Tensor other) {
         if (this.size % other.size != 0) {
             throw new RuntimeException("Tensor.add: size mismatch");

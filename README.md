@@ -7,8 +7,8 @@ Deep Learning Library for Java inspired on PyTorch. (It is still not optimized).
 - Conv1d (with bias)
 - Conv2d (with bias)
 - BatchNorm2d [Coming Soon ...]
-- MaxPool2d [Coming Soon ...]
-- Dropout2d [Comming Soon ...]
+- MaxPool2d
+- Dropout2d
 - Sigmoid
 - Tanh
 - ReLU

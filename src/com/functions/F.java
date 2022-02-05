@@ -27,6 +27,21 @@ public class F {
         return input.conv2d(weight, stride, padding);
     }
 
+    public static Tensor maxpool2d(Tensor input, int[] kernel) {
+        return input.maxpool2d(kernel);
+    }
+
+    public static Tensor dropout2d(Tensor input, float p) {
+        return input.dropout2d(p);
+    }
+
+    public static Tensor batchnorm2d(Tensor input, Tensor runningMean, Tensor runningVar, Tensor gamma, Tensor beta) {
+        // TODO: implement
+        // Calculate the mean and variance of the input
+
+        return null;
+    }
+
     public static Tensor sigmoid(Tensor input) {
         return input.sigmoid();
     }
