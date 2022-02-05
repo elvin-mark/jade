@@ -293,9 +293,8 @@ public class Tensor {
     }
 
     public Tensor conv2d(Tensor other, int[] stride, int[] padding) {
-        // TODO: Fix this
         // shape of tensor: [N, Cin, H, W]
-        // shape of kernel: [Cout, Cin, H, W]
+        // shape of kernel: [Cout, Cin, K1, K2]
         if (this.shape.length != 4 || other.shape.length != 4) {
             throw new RuntimeException("Tensor.conv2d: only support convolution on 4D tensor");
         }
@@ -303,37 +302,88 @@ public class Tensor {
             throw new RuntimeException(
                     "Tensor.conv2d: convolution requires the number of channels of the first tensor to be equal to the number of channels of the second tensor");
         }
-        int[] shape = new int[] { this.shape[0], other.shape[0],
-                (this.shape[2] - other.shape[2] + 2 * padding[0]) / stride[0],
-                (this.shape[3] - other.shape[3] + 2 * padding[1]) / stride[1] };
-        Tensor result = new Tensor(shape);
+        int N = this.shape[0];
+        int Cin = this.shape[1];
+        int H = this.shape[2];
+        int W = this.shape[3];
+        int K1 = other.shape[2];
+        int K2 = other.shape[3];
+        int Cout = other.shape[0];
+        int new_H = (H - K1 + 2 * padding[0]) / stride[0] + 1;
+        int new_W = (W - K2 + 2 * padding[1]) / stride[1] + 1;
+        int[] new_shape = new int[] { N, Cout, new_H, new_W };
+        int raw_h, raw_w;
+        Tensor result = new Tensor(new_shape);
+        for (int n = 0; n < N; n++) {
+            for (int c = 0; c < Cout; c++) {
+                for (int h = 0; h < new_H; h++) {
+                    for (int w = 0; w < new_W; w++) {
+                        float sum = 0;
+                        for (int c1 = 0; c1 < Cin; c1++) {
+                            for (int k1 = 0; k1 < K1; k1++) {
+                                for (int k2 = 0; k2 < K2; k2++) {
+                                    raw_h = h * stride[0] + k1 - padding[0];
+                                    raw_w = w * stride[1] + k2 - padding[1];
+                                    if (raw_h >= 0 && raw_h < H && raw_w >= 0 && raw_w < W) {
+                                        sum += this.at(new int[] { n, c1, raw_h, raw_w })
+                                                * other.at(new int[] { c, c1, k1, k2 });
+                                    }
+                                }
+                            }
+                        }
+                        result.set(new int[] { n, c, h, w }, sum);
+                    }
+                }
+            }
+        }
         return result;
     }
 
     public Tensor conv1d(Tensor other, int stride, int padding) {
-        // TODO: Fix This
         // shape of tensor: [N, Cin, L]
         // shape of kernel: [Cout, Cin, K]
 
         if (this.shape.length != 3 || other.shape.length != 3) {
             throw new RuntimeException("Tensor.conv1d: only support convolution on 3D tensor");
         }
-        int num_batch = this.shape[0];
-        int num_channels = this.shape[1];
+        int N = this.shape[0];
+        int Cin = this.shape[1];
         int L = this.shape[2];
-        int C = other.shape[0];
+        int Cout = other.shape[0];
         int K = other.shape[2];
 
-        if (num_channels != other.shape[1]) {
+        int raw_k;
+
+        if (Cin != other.shape[1]) {
             throw new RuntimeException(
                     "Tensor.conv1d: convolution requires the number of channels of the first tensor to be equal to the number of channels of the second tensor");
         }
-        int[] shape = new int[] { num_batch, C, (L - K + 2 * padding) / stride };
+        int new_L = (L - K + 2 * padding) / stride + 1;
+        int[] new_shape = new int[] { N, Cout, new_L };
 
-        Tensor result = new Tensor(shape);
-        for (int i = 0; i < num_batch; i++) {
-
+        Tensor result = new Tensor(new_shape);
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < Cout; j++) {
+                for (int k = 0; k < new_L; k++) {
+                    float sum = 0;
+                    for (int p = 0; p < Cin; p++) {
+                        for (int q = 0; q < K; q++) {
+                            raw_k = k * stride + q - padding;
+                            if (raw_k >= 0 && raw_k < L) {
+                                sum += this.at(new int[] { i, p, raw_k }) * other.at(new int[] { j, p, q });
+                            }
+                        }
+                    }
+                    result.set(new int[] { i, j, k }, sum);
+                }
+            }
         }
+
+        if (this.requires_grad_ || other.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new Conv1dBackward(this, other, result, stride, padding);
+        }
+
         return result;
     }
 
