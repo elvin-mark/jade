@@ -336,6 +336,12 @@ public class Tensor {
                 }
             }
         }
+
+        if (this.requires_grad_ || other.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new Conv2dBackward(this, other, result, stride, padding);
+        }
+
         return result;
     }
 
