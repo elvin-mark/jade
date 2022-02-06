@@ -165,8 +165,14 @@ public class Tensor {
         this.stride = new_stride;
     }
 
-    public void reshape(int[] shape) {
-        this.view(shape);
+    public Tensor reshape(int[] new_shape) {
+        Tensor result = new Tensor(this);
+        result.view(new_shape);
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new ReshapeBackward(this, result);
+        }
+        return result;
     }
 
     public Tensor transpose() {

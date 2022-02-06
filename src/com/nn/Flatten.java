@@ -12,8 +12,7 @@ public class Flatten extends NNModule {
         int N = x.shape[0];
         int M = input_size / N;
         Tensor output = new Tensor(x);
-        output.reshape(new int[] { N, M });
-        output.requires_grad_ = x.requires_grad_;
+        output = x.reshape(new int[] { N, M });
         return output;
     }
 }

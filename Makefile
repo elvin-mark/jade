@@ -4,21 +4,21 @@ random_test:
 
 sample_linear_regression:
 	javac -d build/ -cp releases/jade.jar test/SampleLinearRegression.java
-	java -classpath build/ -cp .:releases/jade.jar com.test.SampleLinearRegression
+	java -cp .:./build/:releases/jade.jar SampleLinearRegression
 
 sample_xor:
 	javac -d build/ -cp releases/jade.jar test/SampleXOR.java
-	java -classpath build/ -cp .:releases/jade.jar com.test.SampleXOR
+	java -cp .:./build/:releases/jade.jar SampleXOR
 
 sample_classification:
 	javac -d build/ -cp releases/jade.jar test/SampleClassification.java
-	java -classpath build/ -cp .:releases/jade.jar com.test.SampleClassification
+	java -cp .:./build/:releases/jade.jar SampleClassification
 
 sample_conv_classification:
 	javac -d build/ -cp releases/jade.jar test/SampleConvClassification.java
-	java -classpath build/ -cp .:releases/jade.jar com.test.SampleConvClassification
+	java -cp .:./build/:releases/jade.jar SampleConvClassification
 
 jade.jar:
 	mkdir -p build
-	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java  src/com/utils/*.java src/com/utils/*.java
+	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java  src/com/utils/*.java 
 	jar cvf releases/jade.jar -C build/ .

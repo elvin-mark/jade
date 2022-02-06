@@ -3,62 +3,55 @@ import com.utils.*;
 import com.optim.*;
 import com.nn.*;
 
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Map;
 
 public class SampleConvClassification {
-    public static void print_shape(int[] shape) {
-        for (int i : shape) {
-            System.out.print(i + " ");
-        }
-        System.out.println();
-    }
-
     public static void main(String args[]) {
         Sequential model = new Sequential();
-        Tensor x = new Tensor(new int[] { 2, 1, 28, 28 });
+
         model.add_module((NNModule) new Conv2d(1, 8, 3, true));
         model.add_module((NNModule) new Tanh());
         model.add_module((NNModule) new Conv2d(8, 16, 3, true));
         model.add_module((NNModule) new Tanh());
+        model.add_module((NNModule) new Conv2d(16, 32, 3, true));
+        model.add_module((NNModule) new Tanh());
         model.add_module((NNModule) new Flatten());
-        model.add_module((NNModule) new Linear(16 * 4 * 4, 10, true));
+        model.add_module((NNModule) new Linear(128, 10, true));
 
-        return;
-        // Tensor x_train = Misc.loadTensor(""");
-        // Tensor y_train = Misc.loadTensor("");
+        String path_to_digits = System.getenv().get("PATH_TO_DIGITS");
 
-        // x_train = x_train.div(new Tensor(16.0f));
-        // y_train = y_train.div(new Tensor(16.0f));
+        Tensor x_train = Misc.loadTensor(Paths.get(path_to_digits,
+                "x_train_digits.bin").toString());
+        Tensor y_train = Misc.loadTensor(Paths.get(path_to_digits,
+                "y_train_digits.bin").toString());
 
-        // Dataset train_ds = new TensorDataset(x_train, y_train);
-        // DataLoader train_dl = new DataLoader(train_ds, 64, true);
+        x_train = x_train.div(new Tensor(16.0f));
+        y_train = y_train.div(new Tensor(16.0f));
 
-        // HashMap<String, Float> hyperparams = new HashMap<String, Float>();
-        // hyperparams.put("lr", 0.01f);
-        // Optimizer optim = new SGD(model.parameters(), hyperparams);
-        // Loss loss_fn = new CrossEntropyLoss();
-        // float tot_loss;
-        // for (int epoch = 0; epoch < 10; epoch++) {
-        // tot_loss = 0.0f;
-        // for (Tensor[] xy : train_dl) {
-        // Tensor y_pred = model.forward(xy[0]);
-        // Tensor loss = loss_fn.criterion(y_pred, xy[1]);
-        // System.out.println(loss.item());
-        // tot_loss += loss.item();
-        // optim.zero_grad();
-        // loss.backward();
-        // optim.step();
-        // }
-        // tot_loss /= train_dl.size();
-        // System.out.println("Epoch: " + epoch + " Loss: " + tot_loss);
-        // }
+        Dataset train_ds = new TensorDataset(x_train, y_train);
+        DataLoader train_dl = new DataLoader(train_ds, 256, true);
 
-        // Tensor output = model.forward(x);
-        // System.out.println(output);
-        // for (int i : output.shape) {
-        // System.out.print(i + " ");
-        // }
+        HashMap<String, Float> hyperparams = new HashMap<String, Float>();
+        hyperparams.put("lr", 0.01f);
+        Optimizer optim = new SGD(model.parameters(), hyperparams);
+        Loss loss_fn = new CrossEntropyLoss();
+
+        float tot_loss;
+        for (int epoch = 0; epoch < 5; epoch++) {
+            tot_loss = 0.0f;
+            for (Tensor[] xy : train_dl) {
+                Tensor y_pred = model.forward(xy[0]);
+                Tensor loss = loss_fn.criterion(y_pred, xy[1]);
+                tot_loss += loss.item();
+                optim.zero_grad();
+                loss.backward();
+                optim.step();
+            }
+            tot_loss /= train_dl.size();
+            System.out.println("Epoch: " + epoch + " Loss: " + tot_loss);
+        }
     }
 
 }
