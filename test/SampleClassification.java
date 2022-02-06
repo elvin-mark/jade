@@ -1,5 +1,3 @@
-package com.test;
-
 import com.nn.*;
 import com.optim.*;
 import com.data.*;

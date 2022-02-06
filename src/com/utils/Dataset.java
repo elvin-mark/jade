@@ -16,4 +16,8 @@ public class Dataset {
     public int size() {
         return this.length;
     }
+
+    public int[][] get_items_shape() {
+        return null;
+    }
 }

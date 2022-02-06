@@ -4,13 +4,29 @@ import com.data.Tensor;
 import com.functions.F;
 import com.nn.*;
 import com.utils.Misc;
+import com.utils.Dataset;
+import com.utils.TensorDataset;
+import com.utils.DataLoader;
 
 public class Test {
     public static void testDraft() {
-        Tensor x_train = Misc.loadTensor("/home/elvin/Downloads/x_train_digits.bin");
-        Tensor y_train = Misc.loadTensor("/home/elvin/Downloads/y_train_digits.bin");
-        System.out.println(x_train.data[0]);
-        System.out.println(y_train.data[5]);
+        Tensor x_train = Misc.loadTensor("");
+        Tensor y_train = Misc.loadTensor("");
+
+        Dataset train_ds = new TensorDataset(x_train, y_train);
+        DataLoader train_dl = new DataLoader(train_ds, 64, true);
+
+        for (Tensor[] xy : train_dl) {
+            for (int i : xy[0].shape) {
+                System.out.print(i + " ");
+            }
+
+            System.out.println();
+            for (int i : xy[1].shape) {
+                System.out.print(i + " ");
+            }
+
+        }
     }
 
     public static void testTensors() {
