@@ -105,4 +105,29 @@ public class Misc {
             }
         }
     }
+
+    public static NNModule activation_function(String act_fun) {
+        if (act_fun.equals("relu")) {
+            return new ReLU();
+        } else if (act_fun.equals("sigmoid")) {
+            return new Sigmoid();
+        } else if (act_fun.equals("tanh")) {
+            return new Tanh();
+        } else if (act_fun.equals("softmax")) {
+            return new Softmax();
+        } else {
+            System.out.println("Unknown activation function: " + act_fun);
+            return null;
+        }
+    }
+
+    public static NNModule build_mlp(int[] layers, String act_fun, boolean use_bias) {
+        Sequential model = new Sequential();
+        for (int i = 0; i < layers.length - 2; i++) {
+            model.add_module(new Linear(layers[i], layers[i + 1], use_bias));
+            model.add_module(activation_function(act_fun));
+        }
+        model.add_module(new Linear(layers[layers.length - 2], layers[layers.length - 1], use_bias));
+        return model;
+    }
 }

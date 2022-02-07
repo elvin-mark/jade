@@ -8,44 +8,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SampleConvClassification {
-    public static void main(String args[]) {
-        Sequential model = new Sequential();
+        public static void main(String args[]) {
+                Sequential model = new Sequential();
 
-        model.add_module((NNModule) new Conv2d(1, 8, 3, true));
-        model.add_module((NNModule) new Sigmoid());
-        model.add_module((NNModule) new MaxPool2d(2));
-        model.add_module((NNModule) new Conv2d(8, 16, 2, true));
-        model.add_module((NNModule) new Sigmoid());
-        model.add_module((NNModule) new MaxPool2d(2));
-        model.add_module((NNModule) new Flatten());
-        model.add_module((NNModule) new Linear(16, 10, true));
+                model.add_module((NNModule) new Conv2d(1, 8, 3, true));
+                model.add_module((NNModule) new Sigmoid());
+                model.add_module((NNModule) new MaxPool2d(2));
+                model.add_module((NNModule) new Conv2d(8, 16, 3, true));
+                model.add_module((NNModule) new Sigmoid());
+                model.add_module((NNModule) new Flatten());
+                model.add_module((NNModule) new Linear(16, 10, true));
 
-        String path_to_digits = System.getenv().get("PATH_TO_DIGITS");
+                String path_to_digits = System.getenv().get("PATH_TO_DIGITS");
 
-        Tensor x_train = Misc.loadTensor(Paths.get(path_to_digits,
-                "x_train_digits.bin").toString());
-        Tensor y_train = Misc.loadTensor(Paths.get(path_to_digits,
-                "y_train_digits.bin").toString());
-        Tensor x_test = Misc.loadTensor(Paths.get(path_to_digits,
-                "x_test_digits.bin").toString());
-        Tensor y_test = Misc.loadTensor(Paths.get(path_to_digits,
-                "y_test_digits.bin").toString());
+                DataLoader[] dl = com.vision.Datasets.loadDigits(path_to_digits, 64);
 
-        x_train = x_train.div(new Tensor(16.0f));
-        x_test = x_test.div(new Tensor(16.0f));
+                HashMap<String, Float> hyperparams = new HashMap<String, Float>();
+                hyperparams.put("lr", 1.0f);
+                Optimizer optim = new SGD(model.parameters(), hyperparams);
+                Loss loss_fn = new CrossEntropyLoss();
 
-        Dataset train_ds = new TensorDataset(x_train, y_train);
-        DataLoader train_dl = new DataLoader(train_ds, 64, true);
-
-        Dataset test_ds = new TensorDataset(x_test, y_test);
-        DataLoader test_dl = new DataLoader(test_ds, 64, true);
-
-        HashMap<String, Float> hyperparams = new HashMap<String, Float>();
-        hyperparams.put("lr", 1.0f);
-        Optimizer optim = new SGD(model.parameters(), hyperparams);
-        Loss loss_fn = new CrossEntropyLoss();
-
-        Misc.train(model, train_dl, test_dl, optim, loss_fn, 20);
-    }
+                Misc.train(model, dl[0], dl[1], optim, loss_fn, 50);
+        }
 
 }

@@ -24,5 +24,5 @@ sample_mlp_classification:
 
 jade.jar:
 	mkdir -p build
-	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java  src/com/utils/*.java 
+	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java  src/com/utils/*.java src/com/vision/*.java 
 	jar cvf releases/jade.jar -C build/ .
