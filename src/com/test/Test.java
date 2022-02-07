@@ -7,13 +7,14 @@ import com.utils.*;
 import com.optim.*;
 
 import java.util.HashMap;
+import java.nio.file.Paths;
 
 public class Test {
-    public static void testDraft() {
-        // Some random tests
-    }
+        public static void testDraft() {
+                // Some random tests
+        }
 
-    public static void main(String args[]) {
-        testDraft();
-    }
+        public static void main(String args[]) {
+                testDraft();
+        }
 }

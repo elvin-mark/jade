@@ -18,6 +18,10 @@ sample_conv_classification:
 	javac -d build/ -cp releases/jade.jar test/SampleConvClassification.java
 	java -cp .:./build/:releases/jade.jar SampleConvClassification
 
+sample_mlp_classification:
+	javac -d build/ -cp releases/jade.jar test/SampleMLPClassification.java
+	java -cp .:./build/:releases/jade.jar SampleMLPClassification
+
 jade.jar:
 	mkdir -p build
 	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java  src/com/utils/*.java 

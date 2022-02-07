@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.io.File;
 import com.data.Tensor;
+import com.nn.*;
+import com.optim.*;
 
 public class Misc {
     public static final int TYPE_CHAR = 0;
@@ -58,6 +60,49 @@ public class Misc {
             }
         } catch (Exception e) {
             System.out.println("Error writing file: " + path);
+        }
+    }
+
+    public static float[] train_one_epoch(NNModule model, DataLoader train_dl, Optimizer optim, Loss loss_fn) {
+        float[] loss_record = new float[1];
+        loss_record[0] = 0.0f;
+        model.train();
+        for (Tensor[] xy : train_dl) {
+            Tensor y_pred = model.forward(xy[0]);
+            Tensor loss = loss_fn.criterion(y_pred, xy[1]);
+            loss_record[0] += loss.item();
+            optim.zero_grad();
+            loss.backward();
+            optim.step();
+        }
+        loss_record[0] /= train_dl.size();
+        return loss_record;
+    }
+
+    public static float[] eval(NNModule model, DataLoader test_dl, Loss loss_fn) {
+        float[] loss_record = new float[1];
+        loss_record[0] = 0.0f;
+        model.eval();
+        for (Tensor[] xy : test_dl) {
+            Tensor y_pred = model.forward(xy[0]);
+            Tensor loss = loss_fn.criterion(y_pred, xy[1]);
+            loss_record[0] += loss.item();
+        }
+        loss_record[0] /= test_dl.size();
+        return loss_record;
+    }
+
+    public static void train(NNModule model, DataLoader train_dl, DataLoader test_dl, Optimizer optim, Loss loss_fn,
+            int epochs) {
+        for (int epoch = 0; epoch < epochs; epoch++) {
+            float[] loss_record = train_one_epoch(model, train_dl, optim, loss_fn);
+            if (test_dl != null) {
+                float[] test_loss_record = eval(model, test_dl, loss_fn);
+                System.out.println(
+                        "Epoch: " + epoch + " Train Loss: " + loss_record[0] + " Test Loss: " + test_loss_record[0]);
+            } else {
+                System.out.println("Epoch: " + epoch + " Train Loss: " + loss_record[0]);
+            }
         }
     }
 }
