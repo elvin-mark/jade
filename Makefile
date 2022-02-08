@@ -1,5 +1,5 @@
 random_test:
-	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java src/com/utils/*.java src/com/test/Test.java 
+	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java src/com/utils/*.java src/com/vision/*.java src/com/test/Test.java 
 	java -classpath build/ com.test.Test
 
 sample_linear_regression:

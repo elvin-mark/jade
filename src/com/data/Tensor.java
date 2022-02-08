@@ -197,6 +197,33 @@ public class Tensor {
         return this.stride;
     }
 
+    public Tensor argmax(int axis) {
+        // TODO: fix this
+        // No gradients for now
+        if (axis >= this.shape.length) {
+            throw new RuntimeException("Tensor index size mismatch");
+        }
+        int[] new_shape = new int[this.shape.length - 1];
+        for (int i = 0; i < new_shape.length; i++) {
+            if (i < axis)
+                new_shape[i] = this.shape[i];
+            else
+                new_shape[i] = this.shape[i + 1];
+        }
+        Tensor out = new Tensor(new_shape);
+        int skip_stride = this.stride[axis];
+        int max_index = 0;
+        for (int i = 0; i < out.size; i++) {
+            max_index = 0;
+            for (int j = 1; j < this.shape[axis]; j++) {
+                if (this.data[i + j * skip_stride] > this.data[i + max_index * skip_stride])
+                    max_index = j;
+            }
+            out.data[i] = (float) max_index;
+        }
+        return out;
+    }
+
     public Tensor sub_tensor(int[] index) {
         if (index.length != this.shape.length) {
             throw new RuntimeException("Tensor index size mismatch");

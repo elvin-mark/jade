@@ -16,7 +16,7 @@ public class SampleMLPClassification {
                 model.add_module(new Tanh());
                 model.add_module(new Linear(16, 10, true));
 
-                String path_to_digits = System.getenv().get("PATH_TO_DIGITS");
+                String path_to_digits = "./data/DIGITS/";
 
                 Tensor x_train = Misc.loadTensor(Paths.get(path_to_digits,
                                 "x_train_digits.bin").toString());

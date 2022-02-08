@@ -1,21 +1,23 @@
 import com.nn.*;
 import com.optim.*;
+import com.utils.Misc;
 import com.data.*;
 import java.util.*;
 
 public class SampleClassification {
     public static void main(String args[]) {
-        Tensor x_train = new Tensor(new int[] { 4, 2 }, new float[] { 1.0f, 5.0f, 2.0f, 4.0f, -1.f, -4.f, -2.f, -3.f });
-        Tensor y_train = new Tensor(new int[] { 4, 1 }, new float[] { 0.0f, 0.0f, 1.0f, 1.0f });
+        Tensor[] data = Misc.generate_clusters(10, 1000, 4);
+        Tensor x_train = data[0];
+        Tensor y_train = data[1];
 
         NNModule seq = new Sequential();
-        seq.add_module((NNModule) new Linear(2, 5, true));
+        seq.add_module((NNModule) new Linear(4, 8, true));
         seq.add_module((NNModule) new Sigmoid());
-        seq.add_module((NNModule) new Linear(5, 2, true));
+        seq.add_module((NNModule) new Linear(8, 10, true));
 
         Loss loss_fn = new CrossEntropyLoss();
         Map<String, Float> optim_params = new HashMap<String, Float>();
-        optim_params.put("lr", 0.01f);
+        optim_params.put("lr", 0.1f);
         Optimizer optim = new SGD(seq.parameters(), optim_params);
 
         for (int epoch = 0; epoch < 1000; epoch++) {
@@ -27,10 +29,6 @@ public class SampleClassification {
             optim.zero_grad();
             loss.backward();
             optim.step();
-        }
-        System.out.println(seq.forward(x_train));
-        for (Tensor param : seq.parameters()) {
-            param.print();
         }
     }
 }

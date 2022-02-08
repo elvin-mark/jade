@@ -3,6 +3,7 @@ package com.utils;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
+import java.util.Random;
 import java.io.File;
 import com.data.Tensor;
 import com.nn.*;
@@ -130,4 +131,24 @@ public class Misc {
         model.add_module(new Linear(layers[layers.length - 2], layers[layers.length - 1], use_bias));
         return model;
     }
+
+    public static Tensor[] generate_clusters(int num_clusters, int num_points, int dim) {
+        Tensor[] out = new Tensor[2];
+        Random rand = new Random();
+        out[0] = new Tensor(new int[] { num_points, dim });
+        out[1] = new Tensor(new int[] { num_points, 1 });
+
+        Tensor centers = new Tensor(new int[] { num_clusters, dim });
+        centers.random(-5.0f, 5.0f);
+
+        for (int i = 0; i < num_points; i++) {
+            int cluster_id = rand.nextInt(num_clusters);
+            for (int j = 0; j < dim; j++) {
+                out[0].data[i * dim + j] = centers.data[cluster_id * dim + j] + (float) rand.nextGaussian() * 0.1f;
+            }
+            out[1].data[i] = (float) cluster_id;
+        }
+        return out;
+    }
+
 }
