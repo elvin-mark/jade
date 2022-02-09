@@ -16,10 +16,25 @@ public class SubBackward extends Node {
         new_loss_1.zeros();
         new_loss_2.zeros();
         // Get the gradient of the loss with respect to the input t1
-        for (int i = 0; i < loss.data.length; i++) {
-            new_loss_1.data[i % new_loss_1.size] += loss.data[i];
-            new_loss_2.data[i % new_loss_2.size] += -loss.data[i];
+        if (t1.size == t2.size) {
+            for (int i = 0; i < loss.data.length; i++) {
+                new_loss_1.data[i] += loss.data[i];
+                new_loss_2.data[i] += -loss.data[i];
+            }
+        } else {
+            int[] new_stride = t1.compare_shapes(t2);
+            for (int i = 0; i < loss.data.length; i++) {
+                int[] indices = t1.get_indices(i);
+                int j = 0;
+                for (int k = 0; k < new_stride.length; k++) {
+                    j += indices[k] * new_stride[k];
+
+                }
+                new_loss_1.data[i] += loss.data[i];
+                new_loss_2.data[j] += -loss.data[i];
+            }
         }
+
         t1.node.backward(new_loss_1);
         t2.node.backward(new_loss_2);
     }

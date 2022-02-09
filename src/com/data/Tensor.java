@@ -148,6 +148,36 @@ public class Tensor {
         return data[0];
     }
 
+    public int[] get_indices(int index) {
+        int[] indices = new int[this.shape.length];
+        int i = index;
+        for (int k = 0; k < indices.length; k++) {
+            indices[k] = i / this.stride[k];
+            i = i % this.stride[k];
+        }
+        return indices;
+    }
+
+    public int[] compare_shapes(Tensor other) {
+        if (this.size % other.size != 0)
+            throw new RuntimeException("Tensor shape mismatch");
+        int[] new_stride = new int[this.stride.length];
+        for (int i = 0; i < this.stride.length; i++) {
+            if (i < other.stride.length) {
+                if (this.shape[i] == other.shape[i]) {
+                    new_stride[i] = other.stride[i];
+                } else if (other.shape[i] == 1) {
+                    new_stride[i] = 0;
+                } else {
+                    throw new RuntimeException("Tensor shape mismatch");
+                }
+            } else {
+                new_stride[i] = 0;
+            }
+        }
+        return new_stride;
+    }
+
     public void view(int[] shape) {
         int new_size = 1;
         int[] new_stride = new int[shape.length];
@@ -482,13 +512,27 @@ public class Tensor {
     }
 
     public Tensor add(Tensor other) {
-        if (this.size % other.size != 0) {
-            throw new RuntimeException("Tensor.add: size mismatch");
-        }
+        int[] new_stride = this.compare_shapes(other);
+
         Tensor result = new Tensor(this.shape);
-        for (int i = 0; i < this.size; i++) {
-            result.data[i] = this.data[i] + other.data[i % other.size];
+
+        if (this.size == other.size) {
+            for (int i = 0; i < this.size; i++) {
+                result.data[i] = this.data[i] + other.data[i];
+            }
         }
+
+        else {
+            for (int i = 0; i < this.size; i++) {
+                int[] indices = this.get_indices(i);
+                int j = 0;
+                for (int k = 0; k < new_stride.length; k++) {
+                    j += indices[k] * new_stride[k];
+                }
+                result.data[i] = this.data[i] + other.data[j];
+            }
+        }
+
         if (this.requires_grad_ || other.requires_grad_) {
             result.requires_grad(true);
             result.node = new AddBackward(this, other, result);
@@ -497,12 +541,25 @@ public class Tensor {
     }
 
     public Tensor sub(Tensor other) {
-        if (this.size % other.size != 0) {
-            throw new RuntimeException("Tensor.sub: size mismatch");
-        }
+        int[] new_stride = this.compare_shapes(other);
+
         Tensor result = new Tensor(this.shape);
-        for (int i = 0; i < this.size; i++) {
-            result.data[i] = this.data[i] - other.data[i % other.size];
+
+        if (this.size == other.size) {
+            for (int i = 0; i < this.size; i++) {
+                result.data[i] = this.data[i] - other.data[i];
+            }
+        }
+
+        else {
+            for (int i = 0; i < this.size; i++) {
+                int[] indices = this.get_indices(i);
+                int j = 0;
+                for (int k = 0; k < new_stride.length; k++) {
+                    j += indices[k] * new_stride[k];
+                }
+                result.data[i] = this.data[i] - other.data[j];
+            }
         }
         if (this.requires_grad_ || other.requires_grad_) {
             result.requires_grad(true);
@@ -512,12 +569,25 @@ public class Tensor {
     }
 
     public Tensor mul(Tensor other) {
-        if (this.size % other.size != 0) {
-            throw new RuntimeException("Tensor.mul: size mismatch");
-        }
+        int[] new_stride = this.compare_shapes(other);
+
         Tensor result = new Tensor(this.shape);
-        for (int i = 0; i < this.size; i++) {
-            result.data[i] = this.data[i] * other.data[i % other.size];
+
+        if (this.size == other.size) {
+            for (int i = 0; i < this.size; i++) {
+                result.data[i] = this.data[i] * other.data[i];
+            }
+        }
+
+        else {
+            for (int i = 0; i < this.size; i++) {
+                int[] indices = this.get_indices(i);
+                int j = 0;
+                for (int k = 0; k < new_stride.length; k++) {
+                    j += indices[k] * new_stride[k];
+                }
+                result.data[i] = this.data[i] * other.data[j];
+            }
         }
         if (this.requires_grad_ || other.requires_grad_) {
             result.requires_grad(true);
@@ -527,12 +597,25 @@ public class Tensor {
     }
 
     public Tensor div(Tensor other) {
-        if (this.size % other.size != 0) {
-            throw new RuntimeException("Tensor.div: size mismatch");
-        }
+        int[] new_stride = this.compare_shapes(other);
+
         Tensor result = new Tensor(this.shape);
-        for (int i = 0; i < this.size; i++) {
-            result.data[i] = this.data[i] / other.data[i % other.size];
+
+        if (this.size == other.size) {
+            for (int i = 0; i < this.size; i++) {
+                result.data[i] = this.data[i] / other.data[i];
+            }
+        }
+
+        else {
+            for (int i = 0; i < this.size; i++) {
+                int[] indices = this.get_indices(i);
+                int j = 0;
+                for (int k = 0; k < new_stride.length; k++) {
+                    j += indices[k] * new_stride[k];
+                }
+                result.data[i] = this.data[i] / other.data[j];
+            }
         }
         if (this.requires_grad_ || other.requires_grad_) {
             result.requires_grad(true);

@@ -32,7 +32,7 @@ public class Conv2d extends NNModule {
         this.params.add(W);
 
         if (bias) {
-            Tensor b = new Tensor(new int[] { out_channels });
+            Tensor b = new Tensor(new int[] { 1, out_channels });
             // b.random(0.0f, 1.0f);
             b.randn(0.0f, 1.0f / (float) Math.sqrt(in_channels * kernel_size[0] * kernel_size[1]));
             b.requires_grad(true);

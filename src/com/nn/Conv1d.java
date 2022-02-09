@@ -22,7 +22,7 @@ public class Conv1d extends NNModule {
         this.params.add(W);
 
         if (bias) {
-            Tensor b = new Tensor(new int[] { out_channels });
+            Tensor b = new Tensor(new int[] { 1, out_channels });
             // b.random(0.0f, 1.0f);
             b.randn(0.0f, 1.0f);
             b.requires_grad(true);

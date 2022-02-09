@@ -18,7 +18,7 @@ public class Linear extends NNModule {
         this.moduleName = "Linear";
 
         if (bias) {
-            Tensor b = new Tensor(new int[] { out_features });
+            Tensor b = new Tensor(new int[] { 1, out_features });
             // b.random(0.0f, 1.0f);
             b.randn(0.0f, (float) Math.sqrt(1.0f / (float) in_features));
             b.requires_grad(true);
