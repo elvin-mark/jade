@@ -65,44 +65,55 @@ public class Misc {
     }
 
     public static float[] train_one_epoch(NNModule model, DataLoader train_dl, Optimizer optim, Loss loss_fn) {
-        float[] loss_record = new float[1];
-        loss_record[0] = 0.0f;
+        float[] record = new float[2];
+        float loss_record = 0.0f;
+        float corrects = 0.0f;
+        float total = 0.0f;
         model.train();
         for (Tensor[] xy : train_dl) {
             Tensor y_pred = model.forward(xy[0]);
             Tensor loss = loss_fn.criterion(y_pred, xy[1]);
-            loss_record[0] += loss.item();
+            loss_record += loss.item();
+            corrects += y_pred.argmax(1).equal(xy[1]).sum().item();
+            total += xy[1].size;
             optim.zero_grad();
             loss.backward();
             optim.step();
         }
-        loss_record[0] /= train_dl.size();
-        return loss_record;
+        record[0] = loss_record / train_dl.size();
+        record[1] = 100 * corrects / total;
+        return record;
     }
 
     public static float[] eval(NNModule model, DataLoader test_dl, Loss loss_fn) {
-        float[] loss_record = new float[1];
-        loss_record[0] = 0.0f;
+        float[] record = new float[2];
+        float loss_record = 0.0f;
+        float corrects = 0.0f;
+        float total = 0.0f;
         model.eval();
         for (Tensor[] xy : test_dl) {
             Tensor y_pred = model.forward(xy[0]);
             Tensor loss = loss_fn.criterion(y_pred, xy[1]);
-            loss_record[0] += loss.item();
+            loss_record += loss.item();
+            corrects += y_pred.argmax(1).equal(xy[1]).sum().item();
+            total += xy[1].size;
         }
-        loss_record[0] /= test_dl.size();
-        return loss_record;
+        record[0] = loss_record / test_dl.size();
+        record[1] = 100 * corrects / total;
+        return record;
     }
 
     public static void train(NNModule model, DataLoader train_dl, DataLoader test_dl, Optimizer optim, Loss loss_fn,
             int epochs) {
         for (int epoch = 0; epoch < epochs; epoch++) {
-            float[] loss_record = train_one_epoch(model, train_dl, optim, loss_fn);
+            float[] record = train_one_epoch(model, train_dl, optim, loss_fn);
             if (test_dl != null) {
-                float[] test_loss_record = eval(model, test_dl, loss_fn);
+                float[] test_record = eval(model, test_dl, loss_fn);
                 System.out.println(
-                        "Epoch: " + epoch + " Train Loss: " + loss_record[0] + " Test Loss: " + test_loss_record[0]);
+                        "Epoch: " + epoch + " Train Loss: " + record[0] + " Train Acc: " + record[1]
+                                + " Test Loss: " + test_record[0] + " Test Acc: " + test_record[1]);
             } else {
-                System.out.println("Epoch: " + epoch + " Train Loss: " + loss_record[0]);
+                System.out.println("Epoch: " + epoch + " Train Loss: " + record[0] + " Train Acc: " + record[1]);
             }
         }
     }
@@ -150,5 +161,4 @@ public class Misc {
         }
         return out;
     }
-
 }

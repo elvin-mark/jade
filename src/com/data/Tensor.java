@@ -228,28 +228,68 @@ public class Tensor {
     }
 
     public Tensor argmax(int axis) {
-        // TODO: fix this
         // No gradients for now
         if (axis >= this.shape.length) {
             throw new RuntimeException("Tensor index size mismatch");
         }
+
         int[] new_shape = new int[this.shape.length - 1];
+        int[] curr_indices = new int[this.shape.length];
+        int[] indices = new int[this.shape.length - 1];
+
         for (int i = 0; i < new_shape.length; i++) {
             if (i < axis)
                 new_shape[i] = this.shape[i];
             else
                 new_shape[i] = this.shape[i + 1];
         }
+
         Tensor out = new Tensor(new_shape);
-        int skip_stride = this.stride[axis];
+
         int max_index = 0;
+        float max_value = 0.0f;
+        float curr_value;
+
         for (int i = 0; i < out.size; i++) {
+            indices = out.get_indices(i);
+            for (int j = 0; j < indices.length; j++) {
+                if (j < axis)
+                    curr_indices[j] = indices[j];
+                else
+                    curr_indices[j + 1] = indices[j];
+            }
+            curr_indices[axis] = 0;
             max_index = 0;
+            max_value = this.at(curr_indices);
             for (int j = 1; j < this.shape[axis]; j++) {
-                if (this.data[i + j * skip_stride] > this.data[i + max_index * skip_stride])
+                curr_indices[axis] = j;
+                curr_value = this.at(curr_indices);
+                if (curr_value > max_value) {
                     max_index = j;
+                    max_value = curr_value;
+                }
             }
             out.data[i] = (float) max_index;
+        }
+        return out;
+    }
+
+    public Tensor equal(Tensor other) {
+        if (this.size != other.size)
+            throw new RuntimeException("Tensor size mismatch");
+        Tensor out = new Tensor(this.shape);
+        for (int i = 0; i < this.size; i++) {
+            out.data[i] = this.data[i] == other.data[i] ? 1.0f : 0.0f;
+        }
+        return out;
+    }
+
+    public Tensor sum() {
+        // IMPROVE THIS
+        // No gradients yet
+        Tensor out = new Tensor(0.0f);
+        for (int i = 0; i < this.size; i++) {
+            out.data[0] += this.data[i];
         }
         return out;
     }
@@ -513,7 +553,6 @@ public class Tensor {
 
     public Tensor add(Tensor other) {
         int[] new_stride = this.compare_shapes(other);
-
         Tensor result = new Tensor(this.shape);
 
         if (this.size == other.size) {
