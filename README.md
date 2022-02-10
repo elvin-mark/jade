@@ -23,7 +23,7 @@ Deep Learning Library for Java inspired on PyTorch. (It is still not optimized).
 
 ## Optimizers implemented
 - SGD
-- Adam [Coming Soon ...]
+- Adam
 
 ## Example
 

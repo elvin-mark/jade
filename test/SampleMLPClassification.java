@@ -37,11 +37,11 @@ public class SampleMLPClassification {
                 DataLoader test_dl = new DataLoader(test_ds, 32, true);
 
                 HashMap<String, Float> hyperparams = new HashMap<String, Float>();
-                hyperparams.put("lr", 0.1f);
+                hyperparams.put("lr", 0.01f);
                 hyperparams.put("momentum", 0.9f);
-                Optimizer optim = new SGD(model.parameters(), hyperparams);
+                Optimizer optim = new Adam(model.parameters(), hyperparams);
                 Loss loss_fn = new CrossEntropyLoss();
 
-                Misc.train(model, train_dl, test_dl, optim, loss_fn, 100);
+                Misc.train(model, train_dl, test_dl, optim, loss_fn, 10);
         }
 }

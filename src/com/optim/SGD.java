@@ -5,8 +5,8 @@ import java.util.*;
 
 public class SGD extends Optimizer {
     public Tensor[] m = null;
-    public Tensor lr = null;
-    public Tensor momentum = null;
+    public Tensor lr;
+    public Tensor momentum;
 
     public SGD(ArrayList<Tensor> params, Map<String, Float> hyperParameters) {
         super(params, hyperParameters);
@@ -23,21 +23,22 @@ public class SGD extends Optimizer {
                 m[i] = new Tensor(params.get(i).shape);
                 m[i].zeros();
             }
+        } else {
+            momentum = new Tensor(0.0f);
         }
     }
 
     public void step() {
         for (int i = 0; i < params.size(); i++) {
             Tensor p = params.get(i);
+            Tensor tmp = new Tensor(p.grad.shape);
             if (p.requires_grad_) {
-                Tensor g = p.grad;
-                if (momentum != null) {
-                    Tensor m = this.m[i];
-                    m.data = m.mul(momentum).add(g).data;
-                    p.data = p.sub(m.mul(lr)).data;
-                } else {
-                    p.data = p.sub(g.mul(lr)).data;
+                tmp.data = p.grad.data;
+                if (momentum.item() != 0.0f) {
+                    this.m[i].data = this.m[i].mul(momentum).add(tmp).data;
+                    tmp.data = this.m[i].data;
                 }
+                p.data = p.sub(tmp.mul(lr)).data;
             }
         }
     }

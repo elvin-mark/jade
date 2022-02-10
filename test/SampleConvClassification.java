@@ -23,8 +23,9 @@ public class SampleConvClassification {
                 DataLoader[] dl = com.vision.Datasets.loadDIGITS(path_to_digits, 64);
 
                 HashMap<String, Float> hyperparams = new HashMap<String, Float>();
-                hyperparams.put("lr", 1.0f);
-                Optimizer optim = new SGD(model.parameters(), hyperparams);
+                hyperparams.put("lr", 0.01f);
+                hyperparams.put("momentum", 0.9f);
+                Optimizer optim = new Adam(model.parameters(), hyperparams);
                 Loss loss_fn = new CrossEntropyLoss();
 
                 Misc.train(model, dl[0], dl[1], optim, loss_fn, 50);
