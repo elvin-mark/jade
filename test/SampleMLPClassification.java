@@ -38,6 +38,7 @@ public class SampleMLPClassification {
 
                 HashMap<String, Float> hyperparams = new HashMap<String, Float>();
                 hyperparams.put("lr", 0.1f);
+                hyperparams.put("momentum", 0.9f);
                 Optimizer optim = new SGD(model.parameters(), hyperparams);
                 Loss loss_fn = new CrossEntropyLoss();
 
