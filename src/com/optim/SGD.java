@@ -31,8 +31,8 @@ public class SGD extends Optimizer {
     public void step() {
         for (int i = 0; i < params.size(); i++) {
             Tensor p = params.get(i);
-            Tensor tmp = new Tensor(p.grad.shape);
             if (p.requires_grad_) {
+                Tensor tmp = new Tensor(p.grad.shape);
                 tmp.data = p.grad.data;
                 if (momentum.item() != 0.0f) {
                     this.m[i].data = this.m[i].mul(momentum).add(tmp).data;

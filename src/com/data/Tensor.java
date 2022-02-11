@@ -777,7 +777,7 @@ public class Tensor {
         for (int i = 0; i < axis.length; i++)
             s *= this.shape[axis[i]];
 
-        Tensor result = this.sub(mu).pow(2).sum(axis).div(new Tensor(s));
+        Tensor result = this.sub(mu).pow(2).sum(axis).div(new Tensor(s - 1));
 
         result.requires_grad(false);
 

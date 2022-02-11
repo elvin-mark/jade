@@ -37,7 +37,7 @@ public class F {
 
     public static Tensor batchnorm2d(Tensor input, Tensor runningMean, Tensor runningVar, Tensor gamma, Tensor beta,
             float momentum) {
-        // TODO: implement
+        // FIX ME?
         // Calculate the mean and variance of the input
         Tensor mean = input.mean(new int[] { 0, 2, 3 });
         Tensor var = input.var(new int[] { 0, 2, 3 }, mean);
@@ -54,7 +54,7 @@ public class F {
     }
 
     public static Tensor batchnorm2d(Tensor input, Tensor runningMean, Tensor runningVar, Tensor gamma, Tensor beta) {
-        // TODO: implement
+        // FIXME?
         // Calculate the mean and variance of the input
         Tensor normalized = input.sub(runningMean).div(runningVar.add(new Tensor(1e-5f)).pow(0.5f));
         // Scale and shift the normalized input

@@ -6,7 +6,7 @@ Deep Learning Library for Java inspired on PyTorch. (It is still not optimized).
 - Linear (with bias)
 - Conv1d (with bias)
 - Conv2d (with bias)
-- BatchNorm2d [Coming Soon ...]
+- BatchNorm2d
 - MaxPool2d
 - Dropout2d
 - Sigmoid
