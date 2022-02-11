@@ -5,22 +5,25 @@ import com.functions.F;
 
 public class BatchNorm2d extends NNModule {
     int numFeatures;
+    float momentum;
 
-    public BatchNorm2d(int numFeatures) {
+    public BatchNorm2d(int numFeatures, float momentum) {
         super();
         this.numFeatures = numFeatures;
-        Tensor runningMean = new Tensor(new int[] { numFeatures });
-        Tensor runningVar = new Tensor(new int[] { numFeatures });
-        Tensor gamma = new Tensor(new int[] { numFeatures });
-        Tensor beta = new Tensor(new int[] { numFeatures });
+        this.momentum = momentum;
+
+        Tensor runningMean = new Tensor(new int[] { 1, numFeatures, 1, 1 });
+        Tensor runningVar = new Tensor(new int[] { 1, numFeatures, 1, 1 });
+        Tensor gamma = new Tensor(new int[] { 1, numFeatures, 1, 1 });
+        Tensor beta = new Tensor(new int[] { 1, numFeatures, 1, 1 });
 
         runningMean.zeros();
         runningVar.ones();
         gamma.ones();
         beta.zeros();
 
-        runningMean.requires_grad(true);
-        runningVar.requires_grad(true);
+        runningMean.requires_grad(false);
+        runningVar.requires_grad(false);
         gamma.requires_grad(true);
         beta.requires_grad(true);
 
@@ -30,12 +33,19 @@ public class BatchNorm2d extends NNModule {
         this.params.add(beta);
     }
 
+    public BatchNorm2d(int numFeatures) {
+        this(numFeatures, 0.1f);
+    }
+
     public Tensor forward(Tensor input) {
         Tensor runningMean = this.params.get(0);
         Tensor runningVar = this.params.get(1);
         Tensor gamma = this.params.get(2);
         Tensor beta = this.params.get(3);
 
-        return F.batchnorm2d(input, runningMean, runningVar, gamma, beta);
+        if (this.training)
+            return F.batchnorm2d(input, runningMean, runningVar, gamma, beta, momentum);
+        else
+            return F.batchnorm2d(input, runningMean, runningVar, gamma, beta);
     }
 }

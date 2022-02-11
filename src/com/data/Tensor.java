@@ -158,6 +158,14 @@ public class Tensor {
         return indices;
     }
 
+    public int get_index(int[] indices) {
+        int i = 0;
+        for (int k = 0; k < indices.length; k++) {
+            i += indices[k] * this.stride[k];
+        }
+        return i;
+    }
+
     public int[] compare_shapes(Tensor other) {
         if (this.size % other.size != 0)
             throw new RuntimeException("Tensor shape mismatch");
@@ -290,6 +298,41 @@ public class Tensor {
         Tensor out = new Tensor(0.0f);
         for (int i = 0; i < this.size; i++) {
             out.data[0] += this.data[i];
+        }
+        return out;
+    }
+
+    public Tensor sum(int[] axis) {
+        // No gradients yet
+        if (axis.length > this.shape.length) {
+            throw new RuntimeException("Tensor index size mismatch");
+        }
+
+        int[] new_shape = new int[this.shape.length];
+        int[] indices;
+
+        int k = 0;
+        for (int i = 0; i < this.shape.length; i++) {
+            new_shape[i] = this.shape[i];
+        }
+
+        for (int i = 0; i < axis.length; i++) {
+            new_shape[axis[i]] = 1;
+        }
+
+        Tensor out = new Tensor(new_shape);
+        out.zeros();
+
+        for (int i = 0; i < this.size; i++) {
+            indices = this.get_indices(i);
+            for (int j : axis) {
+                indices[j] = 0;
+            }
+            k = 0;
+            for (int j = 0; j < this.shape.length; j++) {
+                k += indices[j] * out.stride[j];
+            }
+            out.data[k] += this.data[i];
         }
         return out;
     }
@@ -709,6 +752,58 @@ public class Tensor {
         if (this.requires_grad_) {
             result.requires_grad(true);
             result.node = new MeanBackward(this, result);
+        }
+        return result;
+    }
+
+    public Tensor mean(int[] axis) {
+        float s = 1.0f;
+        Tensor result = this.sum(axis);
+        for (int i = 0; i < axis.length; i++) {
+            s *= this.shape[axis[i]];
+        }
+
+        result = result.div(new Tensor(s));
+
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new MeanBackward(this, result);
+        }
+        return result;
+    }
+
+    public Tensor var(int[] axis, Tensor mu) {
+        float s = 1.0f;
+        for (int i = 0; i < axis.length; i++)
+            s *= this.shape[axis[i]];
+
+        Tensor result = this.sub(mu).pow(2).sum(axis).div(new Tensor(s));
+
+        result.requires_grad(false);
+
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new VarBackward(this, mu, result);
+        }
+
+        return result;
+    }
+
+    public Tensor var(int[] axis) {
+        return this.var(axis, this.mean(axis));
+    }
+
+    public Tensor var() {
+        Tensor mu = this.mean();
+        Tensor result = new Tensor(new int[] { 1 });
+        for (int i = 0; i < this.size; i++) {
+            result.data[0] += (this.data[i] - mu.data[0]) * (this.data[i] - mu.data[0]);
+        }
+        result.data[0] /= (this.size - 1);
+
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new VarBackward(this, mu, result);
         }
         return result;
     }

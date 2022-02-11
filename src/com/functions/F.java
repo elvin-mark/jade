@@ -35,11 +35,30 @@ public class F {
         return input.dropout2d(p);
     }
 
+    public static Tensor batchnorm2d(Tensor input, Tensor runningMean, Tensor runningVar, Tensor gamma, Tensor beta,
+            float momentum) {
+        // TODO: implement
+        // Calculate the mean and variance of the input
+        Tensor mean = input.mean(new int[] { 0, 2, 3 });
+        Tensor var = input.var(new int[] { 0, 2, 3 }, mean);
+        // Normalize the input
+        mean.requires_grad(false);
+        var.requires_grad(false);
+
+        runningMean.data = runningMean.mul(new Tensor(1 - momentum)).add(mean.mul(new Tensor(momentum))).data;
+        runningVar.data = runningVar.mul(new Tensor(1 - momentum)).add(var.mul(new Tensor(momentum))).data;
+
+        Tensor normalized = input.sub(new Tensor(mean)).div(var.add(new Tensor(1e-5f)).pow(0.5f));
+        // Scale and shift the normalized input
+        return normalized.mul(gamma).add(beta);
+    }
+
     public static Tensor batchnorm2d(Tensor input, Tensor runningMean, Tensor runningVar, Tensor gamma, Tensor beta) {
         // TODO: implement
         // Calculate the mean and variance of the input
-
-        return null;
+        Tensor normalized = input.sub(runningMean).div(runningVar.add(new Tensor(1e-5f)).pow(0.5f));
+        // Scale and shift the normalized input
+        return normalized.mul(gamma).add(beta);
     }
 
     public static Tensor sigmoid(Tensor input) {
