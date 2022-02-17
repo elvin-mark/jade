@@ -297,6 +297,7 @@ public class Tensor {
         // No gradients yet
         Tensor out = new Tensor(0.0f);
         for (int i = 0; i < this.size; i++) {
+            System.out.println(this.data[i]);
             out.data[0] += this.data[i];
         }
         return out;
@@ -958,6 +959,31 @@ public class Tensor {
         if (this.requires_grad_) {
             result.requires_grad(true);
             result.node = new LeakyReluBackward(this, result, alpha);
+        }
+        return result;
+    }
+
+    public Tensor silu() {
+        Tensor result = new Tensor(this.shape);
+        for (int i = 0; i < this.size; i++) {
+            result.data[i] = this.data[i] * (float) (1 / (1 + Math.exp(-this.data[i])));
+        }
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new SiLUBackward(this, result);
+        }
+        return result;
+    }
+
+    public Tensor gelu() {
+        // This is just an approximated method.
+        Tensor result = new Tensor(this.shape);
+        for (int i = 0; i < this.size; i++) {
+            result.data[i] = this.data[i] * (float) (1 / (1 + Math.exp(-1.702f * this.data[i])));
+        }
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new GELUBackward(this, result);
         }
         return result;
     }

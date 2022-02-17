@@ -9,6 +9,7 @@ public class Dropout1d extends NNModule {
     public Dropout1d(float p) {
         super();
         this.p = p;
+        this.moduleName = "Dropout1d";
     }
 
     public Tensor forward(Tensor input) {

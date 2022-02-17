@@ -121,6 +121,14 @@ public class F {
         return input.leaky_relu(alpha);
     }
 
+    public static Tensor silu(Tensor input) {
+        return input.silu();
+    }
+
+    public static Tensor gelu(Tensor input) {
+        return input.gelu();
+    }
+
     public static Tensor softmax(Tensor input) {
         return input.softmax();
     }

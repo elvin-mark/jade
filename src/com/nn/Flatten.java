@@ -5,6 +5,7 @@ import com.data.Tensor;
 public class Flatten extends NNModule {
     public Flatten() {
         super();
+        this.moduleName = "Flatten";
     }
 
     public Tensor forward(Tensor x) {

@@ -13,6 +13,7 @@ public class MaxPool2d extends NNModule {
     public MaxPool2d(int[] kernel) {
         super();
         this.kernel = kernel;
+        this.moduleName = "MaxPool2d";
     }
 
     public Tensor forward(Tensor input) {

@@ -12,6 +12,7 @@ public class BatchNorm1d extends NNModule {
         this.numFeatures = numFeatures;
         this.momentum = momentum;
 
+        this.moduleName = "BatchNorm1d";
         Tensor runningMean = new Tensor(new int[] { 1, numFeatures, 1 });
         Tensor runningVar = new Tensor(new int[] { 1, numFeatures, 1 });
         Tensor gamma = new Tensor(new int[] { 1, numFeatures, 1 });

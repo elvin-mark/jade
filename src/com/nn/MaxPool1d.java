@@ -9,6 +9,7 @@ public class MaxPool1d extends NNModule {
     public MaxPool1d(int kernel) {
         super();
         this.kernel = kernel;
+        this.moduleName = "MaxPool1d";
     }
 
     public Tensor forward(Tensor input) {
