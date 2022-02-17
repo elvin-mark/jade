@@ -577,6 +577,41 @@ public class Tensor {
         return result;
     }
 
+    public Tensor maxpool1d(int kernel) {
+        // TODO: Check and Change this
+        int[] new_shape = new int[this.shape.length];
+        new_shape[2] = this.shape[2] / kernel;
+        int N = this.shape[0];
+        int Cin = this.shape[1];
+        new_shape[0] = N;
+        new_shape[1] = Cin;
+
+        int L = new_shape[2] * kernel;
+
+        Tensor result = new Tensor(new_shape);
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < Cin; j++) {
+                for (int k = 0; k < L; k += kernel) {
+                    float max = this.at(new int[] { i, j, k });
+                    for (int m = 0; m < kernel; m++) {
+                        max = Math.max(max, this.at(new int[] { i, j, k + m }));
+                    }
+                    result.set(new int[] { i, j, k / kernel }, max);
+                }
+            }
+        }
+
+        if (this.requires_grad_)
+
+        {
+            result.requires_grad(true);
+            result.node = new MaxPool1dBackward(this, result, kernel);
+        }
+
+        return result;
+    }
+
     public Tensor dropout2d(float p) {
         Tensor result = new Tensor(this.shape);
         for (int i = 0; i < this.size; i++) {
@@ -590,6 +625,23 @@ public class Tensor {
         if (this.requires_grad_) {
             result.requires_grad(true);
             result.node = new Dropout2dBackward(this, result, p);
+        }
+        return result;
+    }
+
+    public Tensor dropout1d(float p) {
+        Tensor result = new Tensor(this.shape);
+        for (int i = 0; i < this.size; i++) {
+            if (Math.random() < p) {
+                result.data[i] = 0;
+            } else {
+                result.data[i] = this.data[i] / p;
+            }
+        }
+
+        if (this.requires_grad_) {
+            result.requires_grad(true);
+            result.node = new Dropout1dBackward(this, result, p);
         }
         return result;
     }
@@ -772,28 +824,33 @@ public class Tensor {
         return result;
     }
 
-    public Tensor var(int[] axis, Tensor mu) {
+    public Tensor var(int[] axis, Tensor mu, boolean bias) {
         float s = 1.0f;
         for (int i = 0; i < axis.length; i++)
             s *= this.shape[axis[i]];
 
-        Tensor result = this.sub(mu).pow(2).sum(axis).div(new Tensor(s - 1));
+        Tensor result;
+        if (bias) {
+            result = this.sub(mu).pow(2).sum(axis).div(new Tensor(s));
+        } else {
+            result = this.sub(mu).pow(2).sum(axis).div(new Tensor(s - 1));
+        }
 
         result.requires_grad(false);
 
         if (this.requires_grad_) {
             result.requires_grad(true);
-            result.node = new VarBackward(this, mu, result);
+            result.node = new VarBackward(this, mu, bias, result);
         }
 
         return result;
     }
 
-    public Tensor var(int[] axis) {
-        return this.var(axis, this.mean(axis));
+    public Tensor var(int[] axis, boolean bias) {
+        return this.var(axis, this.mean(axis), bias);
     }
 
-    public Tensor var() {
+    public Tensor var(boolean bias) {
         Tensor mu = this.mean();
         Tensor result = new Tensor(new int[] { 1 });
         for (int i = 0; i < this.size; i++) {
@@ -803,7 +860,7 @@ public class Tensor {
 
         if (this.requires_grad_) {
             result.requires_grad(true);
-            result.node = new VarBackward(this, mu, result);
+            result.node = new VarBackward(this, mu, bias, result);
         }
         return result;
     }

@@ -27,6 +27,14 @@ public class F {
         return input.conv2d(weight, stride, padding);
     }
 
+    public static Tensor maxpool1d(Tensor input, int kernel) {
+        return input.maxpool1d(kernel);
+    }
+
+    public static Tensor dropout1d(Tensor input, float p) {
+        return input.dropout1d(p);
+    }
+
     public static Tensor maxpool2d(Tensor input, int[] kernel) {
         return input.maxpool2d(kernel);
     }
@@ -35,21 +43,57 @@ public class F {
         return input.dropout2d(p);
     }
 
+    public static Tensor batchnorm1d(Tensor input, Tensor runningMean, Tensor runningVar, Tensor gamma, Tensor beta,
+            float momentum) {
+        // FIX ME?
+        // Calculate the mean and variance of the input
+        Tensor mean = input.mean(new int[] { 0, 2, 3 });
+        Tensor bias_var = input.var(new int[] { 0, 2, 3 }, mean, true);
+        float s = 1.0f * input.shape[0] * input.shape[2] * input.shape[3];
+        Tensor unbias_var = bias_var.mul(new Tensor(s / (s - 1)));
+        // Tensor unbias_var = input.var(new int[] { 0, 2, 3 }, mean, false);
+        // Normalize the input
+        mean.requires_grad(false);
+        bias_var.requires_grad(false);
+        unbias_var.requires_grad(false);
+
+        runningMean.data = runningMean.mul(new Tensor(1 - momentum)).add(mean.mul(new Tensor(momentum))).data;
+        runningVar.data = runningVar.mul(new Tensor(1 - momentum)).add(unbias_var.mul(new Tensor(momentum))).data;
+
+        Tensor normalized = input.sub(new Tensor(mean)).div(bias_var.add(new Tensor(1e-5f)).pow(0.5f));
+        // Scale and shift the normalized input
+        return normalized.mul(gamma).add(beta);
+    }
+
+    public static Tensor batchnorm1d(Tensor input, Tensor runningMean, Tensor runningVar, Tensor gamma, Tensor beta) {
+        // FIXME?
+        // Calculate the mean and variance of the input
+        Tensor normalized = input.sub(runningMean).div(runningVar.add(new Tensor(1e-5f)).pow(0.5f));
+        // Scale and shift the normalized input
+        return normalized.mul(gamma).add(beta);
+    }
+
     public static Tensor batchnorm2d(Tensor input, Tensor runningMean, Tensor runningVar, Tensor gamma, Tensor beta,
             float momentum) {
         // FIX ME?
         // Calculate the mean and variance of the input
         Tensor mean = input.mean(new int[] { 0, 2, 3 });
-        Tensor var = input.var(new int[] { 0, 2, 3 }, mean);
+        Tensor bias_var = input.var(new int[] { 0, 2, 3 }, mean, true);
+        float s = 1.0f * input.shape[0] * input.shape[2] * input.shape[3];
+        Tensor unbias_var = bias_var.mul(new Tensor(s / (s - 1)));
+        // Tensor unbias_var = input.var(new int[] { 0, 2, 3 }, mean, false);
         // Normalize the input
         mean.requires_grad(false);
-        var.requires_grad(false);
+        bias_var.requires_grad(false);
+        unbias_var.requires_grad(false);
 
         runningMean.data = runningMean.mul(new Tensor(1 - momentum)).add(mean.mul(new Tensor(momentum))).data;
-        runningVar.data = runningVar.mul(new Tensor(1 - momentum)).add(var.mul(new Tensor(momentum))).data;
+        runningVar.data = runningVar.mul(new Tensor(1 - momentum)).add(unbias_var.mul(new Tensor(momentum))).data;
 
-        Tensor normalized = input.sub(new Tensor(mean)).div(var.add(new Tensor(1e-5f)).pow(0.5f));
+        Tensor normalized = input.sub(new Tensor(mean)).div(bias_var.add(new Tensor(1e-5f)).pow(0.5f));
         // Scale and shift the normalized input
+        System.out.println("normalized: " + normalized.requires_grad_);
+
         return normalized.mul(gamma).add(beta);
     }
 
