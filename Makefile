@@ -22,6 +22,12 @@ sample_mlp_classification:
 	javac -d build/ -cp releases/jade.jar test/SampleMLPClassification.java
 	java -cp .:./build/:releases/jade.jar SampleMLPClassification
 
+# javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java  src/com/utils/*.java src/com/vision/*.java 
+trainer:
+	mkdir -p build
+	javac -d build/ src/com/gui/Trainer.java
+	java -cp .:./build/ com.gui.Trainer
+
 jade.jar:
 	mkdir -p build
 	javac -d build/ src/com/data/*.java src/com/functions/F.java src/com/nn/*.java src/com/optim/*.java  src/com/utils/*.java src/com/vision/*.java 
