@@ -297,7 +297,6 @@ public class Tensor {
         // No gradients yet
         Tensor out = new Tensor(0.0f);
         for (int i = 0; i < this.size; i++) {
-            System.out.println(this.data[i]);
             out.data[0] += this.data[i];
         }
         return out;
