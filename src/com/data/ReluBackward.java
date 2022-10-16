@@ -12,7 +12,7 @@ public class ReluBackward extends Node {
         Tensor new_loss = new Tensor(t1.shape);
 
         for (int i = 0; i < new_loss.size; i++) {
-            new_loss.data[i] = this.tensor.data[i] > 0 ? 1 : 0;
+            new_loss.data[i] = (this.tensor.data[i] > 0 ? 1 : 0) * loss.data[i];
         }
         t1.node.backward(new_loss);
     }
