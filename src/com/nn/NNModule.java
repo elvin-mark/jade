@@ -6,10 +6,10 @@ import com.utils.Misc;
 import java.io.File;
 
 public class NNModule {
-    ArrayList<Tensor> params;
-    ArrayList<NNModule> modules;
-    String moduleName;
-    boolean training;
+    public ArrayList<Tensor> params;
+    public ArrayList<NNModule> modules;
+    public String moduleName;
+    public boolean training;
 
     public NNModule() {
         this.moduleName = "NNModule";

@@ -2,6 +2,8 @@ import com.nn.*;
 import com.optim.*;
 import com.utils.Misc;
 import com.data.*;
+import com.models.MLP;
+
 import java.util.*;
 
 public class SampleClassification {
@@ -10,10 +12,11 @@ public class SampleClassification {
         Tensor x_train = data[0];
         Tensor y_train = data[1];
 
-        NNModule seq = new Sequential();
-        seq.add_module((NNModule) new Linear(4, 8, true));
-        seq.add_module((NNModule) new Sigmoid());
-        seq.add_module((NNModule) new Linear(8, 10, true));
+        // NNModule seq = new Sequential();
+        // seq.add_module((NNModule) new Linear(4, 8, true));
+        // seq.add_module((NNModule) new Sigmoid());
+        // seq.add_module((NNModule) new Linear(8, 10, true));
+        NNModule seq = new MLP(4, 8, 10);
 
         Loss loss_fn = new CrossEntropyLoss();
         Map<String, Float> optim_params = new HashMap<String, Float>();
